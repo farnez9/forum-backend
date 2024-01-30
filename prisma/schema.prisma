@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id       Int     @id @default(autoincrement())
+    email    String  @unique
+    username String  @unique
+    name     String
+    verified Boolean @default(true)
+    roles    Roles[]
+
+    notificationSettings NotificationSettings[]
+    posts                Post[]
+    postsLiked           Post[]                 @relation("PostLikes")
+    postsFollowed        Post[]                 @relation("PostFollows")
+    reply                Reply[]
+    password             Password?
+}
+
+enum Roles {
+    ADMIN
+}
+
+enum NotificationSettings {
+    SECURITY
+    MARKETING
+    POSTS
+}
+
+model Post {
+    id        Int      @id @default(autoincrement())
+    title     String
+    body      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    userId    Int
+    published Boolean  @default(false)
+
+    likes   User[]  @relation("PostLikes")
+    follows User[]  @relation("PostFollows")
+    replies Reply[]
+    user    User    @relation(fields: [userId], references: [id])
+    tags    Tag[]
+}
+
+model Password {
+    id     Int    @id @default(autoincrement())
+    userId Int    @unique
+    hash   String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+    id   Int    @id @default(autoincrement())
+    name String @unique
+    post Post[]
+}
+
+model Reply {
+    id        Int      @id @default(autoincrement())
+    body      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    userId    Int
+    postId    Int
+
+    author User @relation(fields: [userId], references: [id])
+    post   Post @relation(fields: [postId], references: [id])
+}
