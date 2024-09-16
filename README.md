@@ -59,5 +59,3 @@ Payload:
 ```
 {{url}}/v1/users/{{id}}
 ```
-
-TO BE CONTINUED...
